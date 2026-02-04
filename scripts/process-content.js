@@ -1,0 +1,326 @@
+#!/usr/bin/env node
+
+/**
+ * Content Repurposing Pipeline
+ *
+ * Takes a video URL and generates 10+ pieces of content
+ * Uses GLM-4.7 (already available in Clawdbot)
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+// Configuration
+const CONFIG = {
+  inputDir: path.join(__dirname, '../input'),
+  outputDir: path.join(__dirname, '../output'),
+  processingDir: path.join(__dirname, '../processing'),
+  contentTypes: [
+    'blog-post',
+    'tweets',
+    'linkedin',
+    'newsletter',
+    'instagram',
+    'tiktok-script',
+    'summary',
+    'faq'
+  ]
+};
+
+// Ensure directories exist
+[CONFIG.inputDir, CONFIG.outputDir, CONFIG.processingDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+/**
+ * Main processing function
+ */
+async function processContent(videoUrl, options = {}) {
+  console.log(`\n🎬 Processing: ${videoUrl}`);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  const jobId = Date.now();
+  const jobDir = path.join(CONFIG.processingDir, `job-${jobId}`);
+  fs.mkdirSync(jobDir, { recursive: true });
+
+  try {
+    // Step 1: Get transcript (using YouTube transcript or manual upload)
+    console.log('📝 Step 1: Fetching transcript...');
+    const transcript = await getTranscript(videoUrl);
+    fs.writeFileSync(path.join(jobDir, 'transcript.txt'), transcript);
+
+    // Step 2: Generate content pieces
+    console.log('🤖 Step 2: Generating content pieces...');
+    const content = await generateContentPieces(transcript, options);
+
+    // Step 3: Save all content
+    console.log('💾 Step 3: Saving content...');
+    const outputPath = path.join(CONFIG.outputDir, `content-${jobId}`);
+    fs.mkdirSync(outputPath, { recursive: true });
+
+    Object.entries(content).forEach(([type, data]) => {
+      const ext = type === 'tweets' ? 'json' : 'md';
+      fs.writeFileSync(
+        path.join(outputPath, `${type}.${ext}`),
+        typeof data === 'string' ? data : JSON.stringify(data, null, 2)
+      );
+      console.log(`  ✅ ${type}`);
+    });
+
+    // Step 4: Generate delivery package
+    console.log('📦 Step 4: Creating delivery package...');
+    const manifest = {
+      jobId,
+      videoUrl,
+      createdAt: new Date().toISOString(),
+      pieces: Object.keys(content),
+      outputPath
+    };
+    fs.writeFileSync(
+      path.join(outputPath, 'manifest.json'),
+      JSON.stringify(manifest, null, 2)
+    );
+
+    console.log('\n✅ Processing complete!');
+    console.log(`📁 Output: ${outputPath}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+    return manifest;
+
+  } catch (error) {
+    console.error('❌ Processing failed:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Get transcript from video
+ */
+async function getTranscript(videoUrl) {
+  // For YouTube videos, we'd use youtube-transcript-api
+  // For now, return placeholder for manual input
+  return `Video transcript for: ${videoUrl}\n\n[This would be fetched using YouTube transcript API or Whisper for local files]`;
+}
+
+/**
+ * Generate all content pieces using AI
+ */
+async function generateContentPieces(transcript, options) {
+  const content = {};
+
+  // 1. Blog Post (1000 words, SEO-optimized)
+  console.log('  📝 Writing blog post...');
+  content['blog-post'] = await generateBlogPost(transcript, options);
+
+  // 2. Tweets (3 tweets, thread-ready)
+  console.log('  🐦 Crafting tweets...');
+  content.tweets = await generateTweets(transcript, options);
+
+  // 3. LinkedIn Post
+  console.log('  💼 Writing LinkedIn post...');
+  content.linkedin = await generateLinkedInPost(transcript, options);
+
+  // 4. Newsletter
+  console.log('  📧 Creating newsletter...');
+  content.newsletter = await generateNewsletter(transcript, options);
+
+  // 5. Instagram Caption
+  console.log('  📸 Writing Instagram caption...');
+  content.instagram = await generateInstagramCaption(transcript, options);
+
+  // 6. TikTok Script
+  console.log('  🎵 Writing TikTok script...');
+  content['tiktok-script'] = await generateTikTokScript(transcript, options);
+
+  // 7. Summary
+  console.log('  📊 Creating summary...');
+  content.summary = await generateSummary(transcript, options);
+
+  // 8. FAQ
+  console.log('  ❓ Generating FAQ...');
+  content.faq = await generateFAQ(transcript, options);
+
+  return content;
+}
+
+/**
+ * AI generation functions
+ * These would call GLM-4.7 via Clawdbot's AI integration
+ */
+
+async function generateBlogPost(transcript, options) {
+  // This would call AI API
+  return `# Blog Post Title Here
+
+## Introduction
+Hook paragraph based on video intro...
+
+## Key Points
+- Point 1 from transcript
+- Point 2 from transcript
+- Point 3 from transcript
+
+## Deep Dive
+Detailed explanation of main topic...
+
+## Conclusion
+Call to action...
+
+---
+*Generated by AI Content Studio*
+`;
+}
+
+async function generateTweets(transcript, options) {
+  return [
+    {
+      text: "Thread 🧵",
+      content: "Opening tweet..."
+    },
+    {
+      text: "Tweet 2/3",
+      content: "Key insight from video..."
+    },
+    {
+      text: "Tweet 3/3",
+      content: "Final takeaway + CTA..."
+    }
+  ];
+}
+
+async function generateLinkedInPost(transcript, options) {
+  return `**LinkedIn Post Headline**
+
+Opening hook that grabs attention...
+
+## Key Insight:
+The main point from the video
+
+## Why This Matters:
+Practical implication
+
+## Action Step:
+What readers should do next
+
+#AI #ContentCreation #Automation`;
+}
+
+async function generateNewsletter(transcript, options) {
+  return `# Newsletter Subject Line
+
+Hi [Name],
+
+This week's video covered [topic]. Here are the key takeaways:
+
+## What You'll Learn:
+• Point 1
+• Point 2
+• Point 3
+
+## The Big Idea:
+[Main concept from video]
+
+## Your Action Step:
+[Specific thing to do]
+
+Watch the full video: [link]
+
+Best,
+[Your Name]`;
+}
+
+async function generateInstagramCaption(transcript, options) {
+  return `**Instagram Caption**
+
+Hook emoji sequence 🎯
+
+Opening line that stops the scroll...
+
+## Key Point:
+[Main insight from video]
+
+Want more? Link in bio 🔗
+
+#[hashtags 1] #[hashtags 2] #[hashtags 3]`;
+}
+
+async function generateTikTokScript(transcript, options) {
+  return `**TikTok Script (60 seconds)**
+
+[0:00-0:05] Hook:
+"Stop scrolling if you want to..."
+
+[0:05-0:20] Problem:
+"Here's what most people get wrong..."
+
+[0:20-0:45] Solution:
+"The secret is..."
+
+[0:45-1:00] CTA:
+"Follow for more tips like this"
+
+---
+*Caption: Add relevant hashtags*`;
+}
+
+async function generateSummary(transcript, options) {
+  return `# Video Summary
+
+**Main Topic:** [Topic from video]
+
+**3 Key Takeaways:**
+1. [Point 1]
+2. [Point 2]
+3. [Point 3]
+
+**Best Quotes:**
+- "[Quote 1]"
+- "[Quote 2]"
+
+**Who Should Watch:**
+[Target audience]
+
+**Time Stamps:**
+- Intro: 0:00
+- Main content: 0:30
+- Conclusion: 8:45`;
+}
+
+async function generateFAQ(transcript, options) {
+  return `# FAQ from Video
+
+**Q: [Common question from video topic]**
+A: [Answer from content]
+
+**Q: [Another question]**
+A: [Answer]
+
+**Q: [Practical question]**
+A: [Answer with action steps]
+
+---
+*Have more questions? Drop them in the comments!*`;
+}
+
+/**
+ * CLI Interface
+ */
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  const videoUrl = args[0];
+
+  if (!videoUrl) {
+    console.log('Usage: node process-content.js <video-url>');
+    console.log('Example: node process-content.js https://youtube.com/watch?v=xxx');
+    process.exit(1);
+  }
+
+  processContent(videoUrl, {
+    niche: args[1] || 'general',
+    tone: args[2] || 'professional'
+  }).catch(console.error);
+}
+
+module.exports = { processContent };

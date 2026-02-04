@@ -1,0 +1,32 @@
+[
+  {
+    "channelName": "Business Growth Hub",
+    "channelUrl": "https://youtube.com/@businessgrowth",
+    "subscribers": 15000,
+    "videosPerMonth": 4,
+    "lastUpload": "2026-02-01",
+    "niche": "business",
+    "email": "contact@businessgrowthhub.com",
+    "fitScore": 95
+  },
+  {
+    "channelName": "Tech Made Simple",
+    "channelUrl": "https://youtube.com/@techmadesimple",
+    "subscribers": 8500,
+    "videosPerMonth": 3,
+    "lastUpload": "2026-01-30",
+    "niche": "tech",
+    "email": "hello@techmadesimple.io",
+    "fitScore": 90
+  },
+  {
+    "channelName": "Fitness Coach Pro",
+    "channelUrl": "https://youtube.com/@fitnesscoachpro",
+    "subscribers": 22000,
+    "videosPerMonth": 5,
+    "lastUpload": "2026-02-02",
+    "niche": "fitness",
+    "email": "info@fitnesscoachpro.com",
+    "fitScore": 88
+  }
+]

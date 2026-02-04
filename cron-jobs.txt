@@ -1,0 +1,14 @@
+# AI Content Studio - Cron Jobs
+# Add these to your crontab with: crontab -e
+
+# Lead finding: Daily at 9 AM
+0 9 * * * cd /home/jonny/clawd/content-studio && node scripts/find-leads.js >> logs/lead-finder.log 2>&1
+
+# Email outreach: Daily at 10 AM
+0 10 * * * cd /home/jonny/clawd/content-studio && node scripts/send-outreach.js >> logs/outreach.log 2>&1
+
+# Process orders: Every 6 hours
+0 */6 * * * cd /home/jonny/clawd/content-studio && node scripts/process-orders.js >> logs/orders.log 2>&1
+
+# Content delivery: Daily at 8 AM
+0 8 * * * cd /home/jonny/clawd/content-studio && node scripts/deliver-content.js >> logs/delivery.log 2>&1
